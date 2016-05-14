@@ -1,0 +1,120 @@
+======================
+Mondrian Art Generator
+======================
+
+   There was a famous artist named Piet Mondrian who created art that
+has stood the test of time even though it was based around a very simple
+concept - a grid of vertical and horizontal black lines with some of the
+resulting rectangles filled with primary colors.
+
+   Searching google images for "mondrian" will provide many examples
+of Mondrian's artistic style.
+
+   Your task is to create a program that when executed, produces
+a pdf file with a randomly-generated image in the style of Piet Mondrian.
+In this directory are ten example files:
+
+   - example-one.pdf
+   - example-two.pdf
+   - ...
+   - example-ten.pdf
+
+   Here is an outline of the approach I took to solving this problem,
+though you can certainly approach this problem as you see fit so long
+as your solution meets the specified requirements.
+
+   1) Using the pdf library, I wrote a small program to generate
+      a random rectangle, centered in the middle of the page.
+
+      The way I did it was to generate a random number for the
+      horizontal margin and another random number for the vertical
+      margin.  So, if my horizontal margin were 50 pixels and my page
+      width 612 pixels, my rectangle's starting x coordinate would
+      be: 50 and the ending x coordinate would be 612 - 50 (and
+      similarly for the y coordinates).
+
+   2) I then created a 'Rect' class whose constructor takes 4 int
+      parameters: (x0, y0, x1, y1).  In that class, I added
+      a method:
+
+         void draw(PDF &p)
+
+      And inside that method, my Rect object draws itself to
+      the pdf file (via 'drawRect').
+
+   3) Next, I made a vector<Rect> called 'list' and stuck the
+      random rectangle from (1) above into it.  I then wrote
+      a loop to go through the whole vector (which currently
+      has just the one element) and call 'draw' on each Rect
+      in the vector.
+
+   4) Now, I make a loop that will run through 'list' a number
+      of times.  In my code, at the top of each of those loops
+      I create a new vector<Rect> called 'newList'.  As I go through
+      each Rect in 'list', I'll either copy it "as is" over to 'newList'
+      or I'll split it in two and put the two, new Rect entries
+      into 'newList'.
+
+      The way I decide if I'm going to split a given Rect or not, is
+      I generate a random number.  In my code, I scale the number so
+      the bigger the area of the Rect, the more likely it is to be
+      split.  
+      
+      So, if I don't end up splitting the Rect, I just copy the current
+      Rect into newList.  If I do split, again I "roll dice" to see if I
+      should split the Rect vertically or horizontally.  Once I've
+      figured that out, I just need to see where I should split
+      the Rect.  Here's an example of a vertical split:
+
+         +------+-------------+
+         |      |             |
+         |      |             |
+         |      |             |
+         +------+-------------+
+
+      Note that we don't want the split to be "too close" to the left
+      or right side otherwise we end up with something like this:
+
+         ++-------------------+
+         ||                   |
+         ||                   |
+         ||                   |
+         ++-------------------+
+
+   5) After we've made a number of passes through 'list' (in my code,
+      I made 15 passes but you can experiment).  We're ready to draw
+      our picture.
+
+      We need to fill in "some" of the Rect objects but not all of them.
+      In my code, I again "rolled dice" to see if a given Rect should be
+      filled or not.  I also had an array containing colors: red, yellow,
+      blue and I'd randomly choose which color I would use to fill in
+      this rectangle.
+
+   So, to summarize:
+
+      - Your program should generate a different picture
+        each time is is run
+
+      - The picture will be of one larger rectangle, centered in the
+        middle of the pdf page that contains a number of smaller
+        rectangles (these rectangles should not be too thin vertically
+        or horizontally)
+
+      - Some of the rectangles will be filled in with primary colors
+
+   ------------------
+   Extra Credit
+   ------------------
+
+      In this directory are three files:
+
+         - extra-credit-example-one.pdf
+         - extra-credit-example-two.pdf
+         - extra-credit-example-three.pdf
+
+      Those files are similar to the Mondrian rectangles we generated
+      above but instead of rectangles, they use triangles.
+
+      For extra credit, give your program the ability to generate Mondrian
+      art using either shape (rectangle or triangle).

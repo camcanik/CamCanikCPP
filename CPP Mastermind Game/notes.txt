@@ -1,0 +1,213 @@
+======================
+MasterMind
+======================
+
+   You are to implement the game MasterMind.  The game starts with player
+one choosing a color for each of four pegs (player two cannot see the chosen
+colors).  The possible colors are:
+
+   - Red
+   - Green
+   - Blue
+   - Cyan
+   - Magenta
+   - Yellow
+
+   Player two then makes a series of guesses, each time supplying
+four colors.  Player one responds to each guess thusly:
+
+   - Player two gets one black peg for every guess that has the
+     right color in the right location
+
+   - Player two gets one white peg for every guess that is the right
+     color but is in the wrong location
+
+   The game continues until player two has enough information to solve
+the puzzle (receives four black pegs) or until player two gives up.
+Here's an example of what a successful game might look like:
+
+   =============================================
+   Welcome to: MasterMind
+   =============================================
+
+   Number of holes: 4
+   Colors (can be abbreviated): Red Green Blue Cyan Magenta Yellow
+
+   Please enter your guess: yellow red blue yellow
+   (Black Pegs: 1, White Pegs: 1)
+
+   Please enter your guess: yellow blue magenta blue
+   (Black Pegs: 0, White Pegs: 2)
+
+   Please enter your guess: blue red green magenta
+   (Black Pegs: 0, White Pegs: 2)
+
+   Please enter your guess: magenta cyan red yellow
+   (Black Pegs: 2, White Pegs: 1)
+
+   Please enter your guess: red magenta red yellow
+   (Black Pegs: 4, White Pegs: 0)
+
+   Solved! (guess number: 5)
+
+   For extra credit, write a 'solve' function that is able to find the
+solution to any MasterMind puzzle.  In my code, if the user answers
+"quit" when asked to supply a guess, I exit my main game loop and
+then call my 'solve' function to find the answer.  Here's the
+algorithm I used:
+
+   1) Create an array of all possible solutions from:
+
+      Red Red Red Red -> Yellow Yellow Yellow Yellow (1296 total)
+
+   2) Now, choose one of those possible solutions at random. Ask player one
+      to evaluate that guess (indicate how many black / white pegs this
+      guess produces).  Then, go through all entries in (1) above and
+      remove any that don't produce that same number of black and white
+      pegs.
+
+      So, if we guessed: red green yellow cyan
+
+      and player one told us: 3 black pegs, 1 white peg
+
+      We'd then run through the list from (1) and try our guess
+      (red green yellow cyan) against each entry in that list.  
+      
+      For each entry, we'd determine the number of black/white pegs.
+      We'd discard any possible solution whose number of black/white
+      pegs does not match what we got from player one for our guess.
+
+Here is an example of that algorithm at work:
+
+   =============================================
+   Welcome to: MasterMind
+   =============================================
+
+   Number of holes: 4
+   Colors (can be abbreviated): Red Green Blue Cyan Magenta Yellow
+
+   Please enter your guess: quit
+
+   (1296 possible solutions)
+   -------------
+   Current Guess
+   -------------
+   Blue, Yellow, Cyan, Green
+   (Black Pegs: 0, White Pegs: 1)
+
+   (152 possible solutions)
+   -------------
+   Current Guess
+   -------------
+   Cyan, Red, Red, Cyan
+   (Black Pegs: 0, White Pegs: 2)
+
+   (9 possible solutions)
+   -------------
+   Current Guess
+   -------------
+   Red, Blue, Magenta, Red
+   (Black Pegs: 2, White Pegs: 1)
+
+   (2 possible solutions)
+   -------------
+   Current Guess
+   -------------
+   Red, Magenta, Green, Red
+   (Black Pegs: 3, White Pegs: 0)
+
+   (1 possible solution)
+   -------------
+   Current Guess
+   -------------
+   Red, Magenta, Yellow, Red
+   (Black Pegs: 4, White Pegs: 0)
+
+   Solved! (guess number: 5)
+
+   Lastly, here is my 'main'.  You do not have to copy its layout/structure,
+I provide it here just as a reference.
+
+   int main()
+   {
+      MasterMind game;
+
+      // game.dump();
+
+      bool go          = true;
+      bool answerFound = false;
+      int  number      = 1;
+
+      cout << "=============================================" << endl;
+      cout << "Welcome to: MasterMind"                        << endl;
+      cout << "=============================================" << endl << endl;
+
+      cout << "Number of holes: " << MasterMind::N_HOLES << endl;
+      cout << "Colors (can be abbreviated):";
+
+      auto c = MasterMind::Red;
+
+      for(;;)
+      {
+         cout << " " << MasterMind::toString(c);
+
+         if(c == MasterMind::Yellow)
+            break;
+
+         ++c;
+      }
+
+      cout << endl << endl;
+
+      while(go)
+      {
+         string theString;
+         string errMsg;
+
+         cout << "Please enter your guess: ";
+
+         getline(cin, theString);
+
+         if(isQuit(theString))
+         {
+            go = false;
+         }
+         else
+         {
+            vector<MasterMind::Color> guess;
+
+            if(!MasterMind::guessFromString(theString, guess, errMsg))
+            {
+               cout << errMsg << endl;
+            }
+            else
+            {
+               int blackPegs = 0;
+               int whitePegs = 0;
+
+               game.evaluateGuess(guess, &blackPegs, &whitePegs);
+
+               MasterMind::dump(guess);
+
+               cout << "(Black Pegs: " << blackPegs << ", " <<
+                       "White Pegs: " << whitePegs << ")" << endl;
+
+               if(blackPegs == MasterMind::N_HOLES)
+               {
+                  cout << "Solved! (guess number: " << number << ")" << endl;
+
+                  answerFound = true;
+                  go          = false;
+               }
+            }
+         }
+
+         cout << endl;
+         number++;
+      }
+
+      if(!answerFound)
+         solve(game);
+
+      return(0);
+   }
